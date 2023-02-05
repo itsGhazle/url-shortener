@@ -16,7 +16,6 @@ function getTable() {
   if (!originalLink.length == 0) {
     $(".addLinks").empty();
     for (let i = 0; i < originalLink.length; i++) {
-      console.log("jjjjj");
       $(".addLinks").append(`<tr>
       <td class="original_links" colspan=2>
         <a href="${originalLink[i]} target="_blank"">${originalLink[i]}</a>
@@ -40,10 +39,8 @@ function getToStorage() {
     originalLink = JSON.parse(localStorage["original"]);
     shortLink = JSON.parse(localStorage["short"]);
   }
-  console.log([originalLink, shortLink]);
   return [originalLink, shortLink];
 }
-console.log(originalLink);
 
 function addLinks(data) {
   $(".addLinks").append(`<tr>
@@ -71,9 +68,7 @@ function getrandom(e) {
   if (url === "") {
     $("p").html("Please enter a url!").addClass("error");
     timeOut();
-    console.log(originalLink);
   } else if (originalLink.includes(url)) {
-    console.log(originalLink);
     $("p").html("You've already tried this link").addClass("error");
     timeOut();
   } else {
@@ -98,4 +93,4 @@ function getrandom(e) {
   this.disabled = false;
 }
 
-$(".btn").on("click", getrandom);
+$(".submit-btn").on("click", getrandom);
