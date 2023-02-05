@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../src/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../src/css/style.css" />
+    <title>Url shortener</title>
+  </head>
+  <body>
+    <header>
+      <h1>Short URL</h1>
+      <h3 class="text-center">Paste the URL to be shortened</h3>
+    </header>
+    <div class="container">
+      <div class="color-bg-subtle">
+        <div class="shortener-from d-flex">
+          <input
+            id="UrlInp"
+            type="text"
+            class="form-control url-input flex-fill"
+           placeholder="Must be an https:// link..."
+            autofocus
+            autocomplete="off"
+          />
+          <button class="btn btn-primary submit-btn ms-2 w-194" type="submit">
+            shorten
+          </button>
+          <p class="error-message"></p>
+        </div>
+
+        <div class="table-responsive table-dark">
+          <table class="table align-middle text-white">
+            <thead>
+              <tr>
+                <th colspan="2">orginal urls</th>
+                <th colspan="3">short urls</th>
+              </tr>
+            </thead>
+            <tbody class="addLinks"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="../src/js/bootstrap.bundle.min.js"></script>
+    <script src="../src/js/jquery.js"></script>
+    <script src="../src/js/index.js"></script>
+  </body>
+</html>
