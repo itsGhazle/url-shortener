@@ -1,6 +1,5 @@
 let originalLink = [];
 let shortLink = [];
-// localStorage.clear()
 
 $(document).ready(function () {
   getToStorage();
@@ -34,6 +33,7 @@ function getTable() {
   }
 }
 
+
 function getToStorage() {
   if (!(localStorage.length == 0)) {
     originalLink = JSON.parse(localStorage["original"]);
@@ -41,8 +41,7 @@ function getToStorage() {
   }
   return [originalLink, shortLink];
 }
-
-function addLinks(data) {
+function addLinksToTable(data) {
   $(".addLinks").append(`<tr>
       <td class="original_links" colspan=2>
         <a href="${data[0]} target="_blank"">${data[0]}</a>
@@ -52,38 +51,59 @@ function addLinks(data) {
       </td>
     </tr>`);
 }
-
 function setToStorage(data) {
   let storage = getToStorage();
   storage[0].push(data[0]);
-  storage[1].push(data[1]);
   localStorage.setItem("original", JSON.stringify(storage[0]));
-  localStorage.setItem("short", JSON.stringify(storage[1]));
+  localStorage.setItem("short", JSON.stringify(data[1]));
 }
 
-function getrandom(e) {
-  e.preventDefault();
+function in_array(array, data) {
+  for (var i = 0; i < array.length; i++) if (array[i] == data) return true;
+  return false;
+}
+
+function get_rand() {
+  let Txt = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`;
+  let shortUrl = "";
+  for (let i = 0; i < 6; i++) {
+    shortUrl += Txt.charAt(Math.floor(Math.random() * Txt.length));
+  }
+
+  if (!in_array(shortLink, shortUrl)) {
+    shortLink.push(shortUrl);
+    
+    return shortUrl;
+  } else {
+    shortUrl=""
+    Txt = Txt + String(new Date().getSeconds());
+    for (let i = 0; i < 6; i++) {
+      shortUrl += Txt.charAt(Math.floor(Math.random() * Txt.length));
+    }
+    return shortUrl;
+  }
+}
+function createRanString() {
+  let url = $("#UrlInp").val();
+  get_rand();
+  setToStorage([url, shortLink]);
+  addLinksToTable([url, get_rand()]);
+  getTable();
+}
+
+function checkUrl(e) {
+  e.preventDefault;
   this.disabled = true;
   let url = $("#UrlInp").val();
   if (url === "") {
     $("p").html("Please enter a url!").addClass("error");
     timeOut();
-  } else if (originalLink.includes(url)) {
+  } else if (originalLink.includes(url) || shortLink.includes(url)) {
     $("p").html("You've already tried this link").addClass("error");
     timeOut();
   } else {
     if (url.startsWith("http://") || url.startsWith("https://")) {
-      let Txt =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      let shortUrl = "";
-      for (let i = 0; i < 6; i++) {
-        shortUrl += Txt.charAt(Math.floor(Math.random() * Txt.length));
-      }
-
-      addLinks([url, shortUrl]);
-      setToStorage([url, shortUrl]);
-      getTable();
-      url = $("#UrlInp").val("");
+      createRanString();
     } else {
       $("p").html("Please enter a valid url!").addClass("error");
       timeOut();
@@ -93,4 +113,4 @@ function getrandom(e) {
   this.disabled = false;
 }
 
-$(".submit-btn").on("click", getrandom);
+$(".submit-btn").on("click", checkUrl);
