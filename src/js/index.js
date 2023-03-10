@@ -1,5 +1,6 @@
 let originalLink = [];
 let shortLink = [];
+let shortLinkArray =[];
 // localStorage.clear()
 $(document).ready(function () {
   getToStorage();
@@ -14,9 +15,9 @@ function timeOut() {
 function getToStorage() {
   if (!(localStorage.length == 0)) {
     originalLink = JSON.parse(localStorage["original"]);
-    shortLink = JSON.parse(localStorage["short"]);
+    shortLinkArray = JSON.parse(localStorage["short"]);
   }
-  return [originalLink, shortLink];
+  return [originalLink, shortLinkArray];
 }
 function getTable(data) {
   if (!data[0].length == 0) {
@@ -51,30 +52,23 @@ function in_array(array, data) {
   return false;
 }
 
-function get_rand() {
-  let shortUrl = "";
-  let Txt = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`;
-
+function generateRandomWords() {
+  let characters = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`;
+  let randomWord = "";
+  let randomVal = new Uint32Array(6);
+  window.crypto.getRandomValues(randomVal);
   for (let i = 0; i < 6; i++) {
-    shortUrl += Txt.charAt(Math.floor(Math.random() * Txt.length));
+    const randomIndex = randomVal[i] % characters.length;
+    randomWord += characters[randomIndex];
   }
-
-  if (!in_array(shortLink, shortUrl)) {
-    shortLink.push(shortUrl);
-  } else {
-    console.log("duplicate");
-    shortUrl = "";
-    Txt = Txt + String(new Date().getSeconds());
-    for (let i = 0; i < 6; i++) {
-      shortUrl += Txt.charAt(Math.floor(Math.random() * Txt.length));
-    }
-    shortLink.push(shortUrl);
-  }
+  if (!in_array(shortLink, randomWord)) {
+   shortLinkArray.push(randomWord);
+  } 
 }
 function createRanString() {
   let url = $("#UrlInp").val();
-  get_rand();
-  setToStorage([url, shortLink]);
+  generateRandomWords();
+  setToStorage([url, shortLinkArray]);
   getTable(getToStorage());
 }
 
@@ -83,7 +77,7 @@ function checkUrl() {
   if (url === "") {
     $("p").html("Please enter a url!").addClass("error");
     timeOut();
-  } else if (originalLink.includes(url) || shortLink.includes(url)) {
+  } else if (originalLink.includes(url) || shortLinkArray.includes(url)) {
     $("p").html("You've already tried this link").addClass("error");
     timeOut();
   } else {
@@ -96,7 +90,6 @@ function checkUrl() {
   }
   $("#UrlInp").val("");
   $("#UrlInp").focus();
- 
 }
 
 $("#shortenUrl").on("click", function (e) {
