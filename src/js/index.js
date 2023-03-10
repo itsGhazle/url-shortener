@@ -1,5 +1,4 @@
 let originalLink = [];
-let shortLink = [];
 let shortLinkArray =[];
 // localStorage.clear()
 $(document).ready(function () {
@@ -61,7 +60,7 @@ function generateRandomWords() {
     const randomIndex = randomVal[i] % characters.length;
     randomWord += characters[randomIndex];
   }
-  if (!in_array(shortLink, randomWord)) {
+  if (!in_array(shortLinkArray, randomWord)) {
    shortLinkArray.push(randomWord);
   } 
 }
