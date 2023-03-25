@@ -1,9 +1,9 @@
 let originalLink = [];
-let shortLinkArray =[];
-// localStorage.clear()
+let shortLinkArray = [];
+
 $(document).ready(function () {
-  getToStorage();
-  getTable(getToStorage());
+  getFromStorage();
+  getTable([originalLink, shortLinkArray]);
 });
 
 function timeOut() {
@@ -11,13 +11,17 @@ function timeOut() {
     $("p").removeClass("error");
   }, 3000);
 }
-function getToStorage() {
+
+function getFromStorage() {
   if (!(localStorage.length == 0)) {
-    originalLink = JSON.parse(localStorage["original"]);
-    shortLinkArray = JSON.parse(localStorage["short"]);
+    originalLink = JSON.parse(localStorage["originalLink"]);
+    shortLinkArray = JSON.parse(localStorage["shortLinkArray"]);
+    return [originalLink, shortLinkArray];
+  } else {
+    return [[], []];
   }
-  return [originalLink, shortLinkArray];
 }
+
 function getTable(data) {
   if (!data[0].length == 0) {
     $(".addLinks").empty();
@@ -34,66 +38,90 @@ function getTable(data) {
   } else {
     $(".addLinks").append(`<tr>
       <td class="text-center" colspan="6">
-        No data have been found!
+        No data has been found!
       </td>
     </tr>`);
   }
 }
 
-function setToStorage(data) {
-  let storage = getToStorage();
-  storage[0].push(data[0]);
-  localStorage.setItem("original", JSON.stringify(storage[0]));
-  localStorage.setItem("short", JSON.stringify(data[1]));
+function saveToStorage() {
+  localStorage.setItem("originalLink", JSON.stringify(originalLink));
+  localStorage.setItem("shortLinkArray", JSON.stringify(shortLinkArray));
 }
-function in_array(array, data) {
-  for (var i = 0; i < array.length; i++) if (array[i] == data) return true;
-  return false;
-}
-
-function generateRandomWords() {
-  let characters = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`;
-  let randomWord = "";
-  let randomVal = new Uint32Array(6);
-  window.crypto.getRandomValues(randomVal);
-  for (let i = 0; i < 6; i++) {
-    const randomIndex = randomVal[i] % characters.length;
-    randomWord += characters[randomIndex];
+function hashCode(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    let char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
   }
-  if (!in_array(shortLinkArray, randomWord)) {
-   shortLinkArray.push(randomWord);
-  } 
-}
-function createRanString() {
-  let url = $("#UrlInp").val();
-  generateRandomWords();
-  setToStorage([url, shortLinkArray]);
-  getTable(getToStorage());
+  return hash;
 }
 
-function checkUrl() {
+function generateUniqueShortUrl(originalUrl, length = 8) {
+  const hash = hashCode(originalUrl);
+  const hashHex = hash.toString(16);
+  return hashHex.slice(0, length);
+}
+
+function createShortUrl() {
   let url = $("#UrlInp").val();
+  if (originalLink.includes(url)) {
+    let index = originalLink.indexOf(url);
+    let existsShortUrl = shortLinkArray[index];
+    $("p")
+      .html(
+        `This link already has a short URL. The short URL is ${existsShortUrl}`
+      )
+      .addClass("error");
+    timeOut();
+  } else {
+    let shortUrl = generateUniqueShortUrl(url);
+    let retry = 0;
+    while (
+      shortLinkArray.includes(shortUrl) &&
+      retry <= Math.pow(16, shortUrl.length)
+    ) {
+      let newShortUrl = generateUniqueShortUrl(url, shortUrl.length + 1);
+      if (shortLinkArray.includes(newShortUrl)) {
+        retry++;
+      } else {
+        shortUrl = newShortUrl;
+        retry = 0;
+      }
+    }
+    if (!shortLinkArray.includes(shortUrl)) {
+      shortLinkArray.push(shortUrl);
+      originalLink.push(url);
+      saveToStorage();
+      getTable([originalLink, shortLinkArray]);
+    }
+  }
+}
+
+function validateUrl() {
+  let urlInput = $("#UrlInp");
+  let url = urlInput.val().trim();
   if (url === "") {
     $("p").html("Please enter a url!").addClass("error");
     timeOut();
-  } else if (originalLink.includes(url) || shortLinkArray.includes(url)) {
-    $("p").html("You've already tried this link").addClass("error");
+    urlInput.focus();
+  } else if (!/^https?:\/\//i.test(url)) {
+    $("p")
+      .html("Invalid URL. Please include the http:// or https:// scheme.")
+      .addClass("error");
     timeOut();
+    urlInput.focus();
   } else {
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      createRanString();
-    } else {
-      $("p").html("Please enter a valid url!").addClass("error");
-      timeOut();
-    }
+    createShortUrl();
   }
-  $("#UrlInp").val("");
-  $("#UrlInp").focus();
+  urlInput.val("");
+  urlInput.focus();
 }
 
 $("#shortenUrl").on("click", function (e) {
-  checkUrl();
+  validateUrl();
 });
 $("#UrlInp").on("keyup", function (e) {
-  if (e.key === "Enter") checkUrl();
+  if (e.key === "Enter") validateUrl();
 });
